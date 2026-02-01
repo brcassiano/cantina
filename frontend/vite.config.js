@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/',  // ← ADICIONAR ESTA LINHA
   server: {
-    host: '0.0.0.0',  // Expõe para rede local
-    port: 5173,
-    strictPort: true
+    host: true,
+    port: 5173
   }
 })
