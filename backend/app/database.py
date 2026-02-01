@@ -1,31 +1,32 @@
-from supabase import create_client, Client
 import os
-from dotenv import load_dotenv
-from functools import lru_cache
+from supabase import create_client, Client
+from typing import Optional
 
-load_dotenv()
+# Variáveis de ambiente
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-@lru_cache()
+
 def get_supabase_client() -> Client:
     """
-    Retorna cliente Supabase singleton com connection pooling.
-    A conexão é reutilizada entre as requisições.
+    Retorna uma instância do cliente Supabase.
     """
-    url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_KEY")
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        raise ValueError("SUPABASE_URL e SUPABASE_KEY devem estar configurados")
     
-    if not url or not key:
-        raise ValueError("SUPABASE_URL e SUPABASE_KEY devem estar definidos no .env")
-    
-    return create_client(url, key)
+    return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-async def test_connection():
-    """Testa conexão com Supabase"""
+async def test_connection() -> bool:
+    """
+    Testa conexão com Supabase.
+    Retorna True se conectou, False caso contrário.
+    """
     try:
-        client = get_supabase_client()
-        response = client.table("vendas").select("count", count="exact").limit(0).execute()
+        supabase = get_supabase_client()
+        # Tenta fazer uma query simples
+        supabase.table("vendas").select("id").limit(1).execute()
         return True
     except Exception as e:
-        print(f"Erro ao conectar no Supabase: {e}")
+        print(f"Erro ao conectar no Supabase: {str(e)}")
         return False
