@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 function AddSaleForm({ onSubmit }) {
   const [item, setItem] = useState('')
   const [preco, setPreco] = useState('')
+  const [quantidade, setQuantidade] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
 
   const handleSubmit = (e) => {
@@ -20,13 +21,23 @@ function AddSaleForm({ onSubmit }) {
       return
     }
 
+    if (quantidade < 1) {
+      alert('Quantidade deve ser no mínimo 1')
+      return
+    }
+
     setIsAdding(true)
     
-    // Simular delay
     setTimeout(() => {
-      onSubmit({ item: item.trim(), preco: precoNumerico })
+      onSubmit({ 
+        item: item.trim(), 
+        quantidade: quantidade,
+        preco: precoNumerico,
+        total: quantidade * precoNumerico
+      })
       setItem('')
       setPreco('')
+      setQuantidade(1)
       setIsAdding(false)
     }, 200)
   }
@@ -49,6 +60,21 @@ function AddSaleForm({ onSubmit }) {
             placeholder="Ex: Suco de laranja, Coxinha..."
             value={item}
             onChange={(e) => setItem(e.target.value)}
+            className="input-field"
+            disabled={isAdding}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="quantidade" className="block text-sm font-medium text-gray-700 mb-1">
+            Quantidade
+          </label>
+          <input
+            id="quantidade"
+            type="number" 
+            min="1" 
+            value={quantidade}
+            onChange={(e) => setQuantidade(Number(e.target.value))}
             className="input-field"
             disabled={isAdding}
           />

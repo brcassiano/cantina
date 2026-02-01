@@ -7,14 +7,13 @@ import ControleMensal from './components/ControleMensal'
 import MenuToggle from './components/MenuToggle'
 
 function App() {
-  const [viewAtual, setViewAtual] = useState('diario') // 'diario' ou 'mensal'
+  const [viewAtual, setViewAtual] = useState('diario')
   const [dataSelecionada, setDataSelecionada] = useState(
     new Date().toISOString().split('T')[0]
   )
   const [vendas, setVendas] = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Carregar vendas do localStorage quando data mudar
   useEffect(() => {
     if (viewAtual === 'diario') {
       carregarVendas(dataSelecionada)
@@ -24,7 +23,6 @@ function App() {
   const carregarVendas = (data) => {
     setLoading(true)
     
-    // Simular delay de rede
     setTimeout(() => {
       const todasVendas = JSON.parse(localStorage.getItem('vendas') || '[]')
       const vendasDoDia = todasVendas.filter(v => v.data === data)
@@ -41,46 +39,42 @@ function App() {
       createdAt: new Date().toISOString()
     }
 
-    // Salvar no localStorage
     const todasVendas = JSON.parse(localStorage.getItem('vendas') || '[]')
     todasVendas.push(venda)
     localStorage.setItem('vendas', JSON.stringify(todasVendas))
 
-    // Atualizar estado
     setVendas([...vendas, venda])
   }
 
   const deletarVenda = (id) => {
-    // Remover do localStorage
     const todasVendas = JSON.parse(localStorage.getItem('vendas') || '[]')
     const vendasAtualizadas = todasVendas.filter(v => v.id !== id)
     localStorage.setItem('vendas', JSON.stringify(vendasAtualizadas))
 
-    // Atualizar estado
     setVendas(vendas.filter(v => v.id !== id))
   }
 
   const editarVenda = (id, vendaEditada) => {
-    // Atualizar no localStorage
     const todasVendas = JSON.parse(localStorage.getItem('vendas') || '[]')
     const vendasAtualizadas = todasVendas.map(v => 
       v.id === id ? { ...v, ...vendaEditada } : v
     )
     localStorage.setItem('vendas', JSON.stringify(vendasAtualizadas))
 
-    // Atualizar estado
     setVendas(vendas.map(v => 
       v.id === id ? { ...v, ...vendaEditada } : v
     ))
   }
 
   const calcularTotal = () => {
-    return vendas.reduce((acc, venda) => acc + parseFloat(venda.preco), 0)
+    return vendas.reduce((acc, venda) => {
+      const total = venda.total || (venda.preco * (venda.quantidade || 1))
+      return acc + parseFloat(total)
+    }, 0)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 pb-8">
-      {/* Header */}
       <div className="bg-primary-600 text-white shadow-lg">
         <div className="max-w-2xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
@@ -99,7 +93,6 @@ function App() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {viewAtual === 'diario' ? (
           <>

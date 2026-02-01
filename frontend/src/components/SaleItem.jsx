@@ -4,23 +4,30 @@ import { Trash2, Edit2, Check, X } from 'lucide-react'
 function SaleItem({ venda, onDelete, onEdit }) {
   const [editando, setEditando] = useState(false)
   const [itemEditado, setItemEditado] = useState(venda.item)
+  const [quantidadeEditada, setQuantidadeEditada] = useState(venda.quantidade || 1)
   const [precoEditado, setPrecoEditado] = useState(venda.preco)
 
   const handleSalvar = () => {
-    if (!itemEditado.trim() || !precoEditado) {
+    if (!itemEditado.trim() || !precoEditado || quantidadeEditada < 1) {
       alert('Campos inválidos')
       return
     }
 
+    const precoNum = parseFloat(precoEditado)
+    const qtd = parseInt(quantidadeEditada)
+
     onEdit(venda.id, {
       item: itemEditado.trim(),
-      preco: parseFloat(precoEditado)
+      quantidade: qtd,
+      preco: precoNum,
+      total: qtd * precoNum
     })
     setEditando(false)
   }
 
   const handleCancelar = () => {
     setItemEditado(venda.item)
+    setQuantidadeEditada(venda.quantidade || 1)
     setPrecoEditado(venda.preco)
     setEditando(false)
   }
@@ -36,14 +43,26 @@ function SaleItem({ venda, onDelete, onEdit }) {
             className="input-field text-sm py-2"
             placeholder="Nome do item"
           />
+          
+          <input
+            type="number"
+            min="1"
+            value={quantidadeEditada}
+            onChange={(e) => setQuantidadeEditada(e.target.value)}
+            className="input-field text-sm py-2"
+            placeholder="Quantidade"
+          />
+          
           <input
             type="number"
             step="0.01"
+            min="0"
             value={precoEditado}
             onChange={(e) => setPrecoEditado(e.target.value)}
             className="input-field text-sm py-2"
-            placeholder="Preço"
+            placeholder="Preço unitário"
           />
+          
           <div className="flex gap-2">
             <button
               onClick={handleSalvar}
@@ -73,6 +92,7 @@ function SaleItem({ venda, onDelete, onEdit }) {
             {venda.item}
           </h3>
           <p className="text-xs text-gray-500 mt-0.5">
+            {venda.quantidade || 1}x R$ {parseFloat(venda.preco).toFixed(2).replace('.', ',')} • {' '}
             {new Date(venda.createdAt).toLocaleTimeString('pt-BR', { 
               hour: '2-digit', 
               minute: '2-digit' 
@@ -82,7 +102,7 @@ function SaleItem({ venda, onDelete, onEdit }) {
 
         <div className="flex items-center gap-3">
           <p className="text-lg font-bold text-green-600 whitespace-nowrap">
-            R$ {parseFloat(venda.preco).toFixed(2).replace('.', ',')}
+            R$ {parseFloat(venda.total || venda.preco).toFixed(2).replace('.', ',')}
           </p>
 
           <div className="flex gap-1">

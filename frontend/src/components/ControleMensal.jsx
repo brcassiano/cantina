@@ -28,7 +28,11 @@ function ControleMensal() {
       
       setVendasDoMes(vendasFiltradas)
       
-      const total = vendasFiltradas.reduce((acc, v) => acc + parseFloat(v.preco), 0)
+      // ✅ CORRIGIDO: Calcular usando total (quantidade × preco)
+      const total = vendasFiltradas.reduce((acc, v) => {
+        const valorVenda = v.total || (v.preco * (v.quantidade || 1))
+        return acc + parseFloat(valorVenda)
+      }, 0)
       setTotalMes(total)
       
       setLoading(false)
@@ -60,7 +64,6 @@ function ControleMensal() {
     carregarVendasMes(novoMes)
   }
 
-  // Mês/ano máximo permitido (hoje)
   const mesAnoAtual = (() => {
     const hoje = new Date()
     return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`
@@ -154,7 +157,12 @@ function ControleMensal() {
           <div className="space-y-4">
             {datasOrdenadas.map(data => {
               const vendasDoDia = vendasAgrupadas[data]
-              const totalDia = vendasDoDia.reduce((acc, v) => acc + parseFloat(v.preco), 0)
+              
+              // ✅ CORRIGIDO: Calcular total do dia usando quantidade
+              const totalDia = vendasDoDia.reduce((acc, v) => {
+                const valorVenda = v.total || (v.preco * (v.quantidade || 1))
+                return acc + parseFloat(valorVenda)
+              }, 0)
               
               const dataFormatada = new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', {
                 weekday: 'short',
@@ -175,27 +183,35 @@ function ControleMensal() {
                   </div>
 
                   <div className="space-y-2">
-                    {vendasDoDia.map(venda => (
-                      <div 
-                        key={venda.id} 
-                        className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-800 truncate">
-                            {venda.item}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(venda.createdAt).toLocaleTimeString('pt-BR', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </p>
+                    {vendasDoDia.map(venda => {
+                      // ✅ NOVO: Calcular valores individuais
+                      const quantidade = venda.quantidade || 1
+                      const precoUnitario = parseFloat(venda.preco)
+                      const totalVenda = venda.total || (precoUnitario * quantidade)
+                      
+                      return (
+                        <div 
+                          key={venda.id} 
+                          className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-800 truncate">
+                              {venda.item}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {quantidade}x R$ {precoUnitario.toFixed(2).replace('.', ',')} • {' '}
+                              {new Date(venda.createdAt).toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </p>
+                          </div>
+                          <span className="text-green-600 font-semibold ml-3 whitespace-nowrap">
+                            R$ {totalVenda.toFixed(2).replace('.', ',')}
+                          </span>
                         </div>
-                        <span className="text-green-600 font-semibold ml-3 whitespace-nowrap">
-                          R$ {parseFloat(venda.preco).toFixed(2).replace('.', ',')}
-                        </span>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between text-sm">
